@@ -1,0 +1,10 @@
+AgeGroup,TimeofDay,NotSmiledPhone,NotSmiled,Smiled,Xcentre,Ycentre
+0 - 30 years,7 am - 11:59 am,6,6,8,200,380
+0 - 30 years,12 pm - 4:59 pm,4,3,10,200,230
+0 - 30 years,5 pm - 9 pm,3,3,1,200,74
+30-60yrs,7 am - 11:59 am,2,3,6,600,380
+30-60yrs,12 pm - 4:59 pm,3,1,2,600,230
+30-60yrs,5 pm - 9 pm,2,3,5,600,74
+60yrs and above,7 am - 11:59 am,1,2,4,1000,380
+60yrs and above,12 pm - 4:59 pm,0,2,3,1000,230
+60yrs and above,5 pm - 9 pm,1,2,4,1000,74

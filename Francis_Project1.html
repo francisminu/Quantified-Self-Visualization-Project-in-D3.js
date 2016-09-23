@@ -1,0 +1,667 @@
+
+
+<!--Referred from http://bl.ocks.org/weiglemc/6185069 -->
+
+<!DOCTYPE html>
+<meta charset="utf-8">
+
+<body>
+
+
+  <h1 align="center"> CS 428 - Visualization and Visual Analytics </h1>
+  <h2 align="center"> Project 1 - Quantified Self </h2>
+  <h3>Project Description</h3>
+
+  <p>My project is an analysis of responses given by people towards strangers.
+    This data collection has helped me analyze the reasons as to why people tend to
+    disregard fellow beings during various situations.</p>
+  <p>  I collected data while travelling through different places and observing
+    the behavior of random people towards me.
+    I categorized them based on Gender, Age group, the time when I met them and the location where I met them.
+    This information helps me analyze the major reasons as to why people tend to disregard fellow beings.
+  </p>
+  <h3>
+    Data Visualization </h3>
+    <p> The visualization on the left represents an aggregation of data that was collected. </p>
+    <p> The visualization on the bottom displays the FINAL ANALYSIS made from the data that was collected.
+      One of the key factors analysed was the use of mobile phones. This project has helped me understand that
+      the major reason as to why people ignore others is over use of Mobile Phones.
+    </p>
+    <p> The visualization on the bottom displays the count of people who were using mobile phones during the data collection. </p>
+
+  <script src="https://d3js.org/d3.v4.min.js"></script>
+
+  <script>
+
+ // The code for creating the Charts and Plots starts here -->
+
+  var margin = {top: 60, right: 10, bottom: 50, left: 200};
+  var width = 1200,
+      height = 500;
+
+  var countCall = 0;
+
+  //var colorScheme  = ['#e41a1c','#377eb8','#4daf4a'];
+  var colorScheme  = ['#1b9e77','#d95f02','#7570b3'];
+
+  var body = d3.select("body");
+  var svg = body.append("svg")
+  .attr("width",width + margin.left + margin.right)
+  .attr("height",height + margin.top + margin.bottom)
+  .append("g")
+  .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+  svg.append("text")
+       .attr("x", (width / 2))
+       .attr("y", 0 - (margin.top / 2))
+       .attr("text-anchor", "middle")
+       .style("font-size", "20px")
+       //.style("text-decoration", "underline")
+       .text("Visualization 1: This displays the count of people under various categories with respect to Time of day and Age Group");
+
+// SVG created for the displaying the comparison chart (Donut chart) on the right)
+
+var margin2 = {top: 60, right: 10, bottom: 50, left: 200};
+  var svg2Width = 500,
+  svg2Height = 500;
+ var svg2 = body.append("svg")
+  .attr("width",svg2Width + margin2.left + margin2.right)
+  .attr("height",svg2Height + margin2.top + margin2.bottom)
+.append("g")
+.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+
+
+
+
+drawAgeBasedComparisonData();
+//drawTimeBasedComparisonData();
+//drawGenderBasedComparisonData();
+
+var functionCalled;
+
+  var borderPath = svg.append("rect")
+       			.attr("x", -70)
+       			.attr("y", -20)
+       			.attr("height", height+25)
+       			.attr("width", width+80)
+       			.style("stroke", "black")
+       			.style("fill", "none")
+       			.style("stroke-width", 1);
+
+  var g = svg.append("g")
+  //.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+  .attr("transform","translate(0,"+ height +") scale(1,-1)");
+
+
+
+  var xAxisText = ["0 - 30 Years","30 - 60 Years","60 Years & Above"];
+  var yAxisText = ["7am - 11:59am","12pm - 4:59pm","5pm - 9pm"];
+
+
+  var xScale = d3.scaleBand()
+  .domain(xAxisText)
+  .rangeRound([0,width]);
+  //   console.log(xScale.domain());
+
+
+  var xAxis = d3.axisBottom()
+  .scale(xScale);
+  //.ticks(3);
+
+  var yScale = d3.scaleBand()
+  .domain(yAxisText)
+  .rangeRound([height,0]);
+
+  var yAxis = d3.axisLeft()
+  .scale(yScale);
+  //.ticks(3);
+
+
+  d3.csv("data.csv",function(data){
+
+    data.forEach(function(d){
+      d.Smiled = +d.Smiled;
+      //  d.AgeGroup = +d.AgeGroup;
+      //d.TimeofDay = +d.TimeofDay;
+      d.Xcentre = +d.Xcentre;
+      d.Ycentre = +d.Ycentre;
+    });
+
+
+
+    svg.append("g")
+    .attr("class","x axis")
+    .attr("transform","translate(0,450)")
+    //.attr("transform","translate(80,"+ height +")")
+    .call(xAxis);
+
+
+
+    //yScale.domain(data.map(function(d){ return d["TimeofDay"]; }));
+    svg.append("g")
+    .attr("class","y axis")
+    .attr("transform", "translate(40,-20)")
+    .call(yAxis)
+    .selectAll("text")
+            .style("text-anchor", "end")
+            .attr("dx", "-.8em")
+            .attr("dy", ".15em")
+            .attr("transform", function(d) {
+                return "translate(-10,-50) rotate(-90)"
+                });
+
+
+    svg.selectAll(".x text");  // select all the text elements for the xaxis
+
+
+        // now add titles to the axes
+        svg.append("text")
+            .attr("text-anchor", "middle")  // this makes it easy to centre the text as the transform is applied to the anchor
+            .attr("transform", "translate(-25,"+(height/2)+")rotate(-90)")  // text is drawn off the screen top left, move down and out and rotate
+            .text("TIME OF DAY (HOURS)");
+
+        svg.append("text")
+            .attr("text-anchor", "middle")  // this makes it easy to centre the text as the transform is applied to the anchor
+            //.attr("transform", "translate("+ (width/2) +","+(height-(padding/3))+")")  // centre below axis
+            .attr("transform","translate("+width/2+",480)")
+            .text("AGE GROUP (YEARS)");
+
+    var circleData = svg.selectAll("circle")
+    .data(data);
+
+    drawOutlayCircles(circleData);
+    drawNotSmiledPhoneData(circleData);
+    drawNotSmiledData(circleData);
+    drawSmiledData(circleData);
+
+
+    var colorText = ["No Greeting - Busy With Mobile","No Greeting - Other","Smiled"];
+    var color = ["red","green","blue"];
+    //var color = d3.scaleColor.category10();
+
+    var legend1 = svg.selectAll(".legend1")
+    .data(color)
+    .enter().append("g")
+    .attr("id","initialLegend")
+    .attr("class", "legend")
+    .attr("transform", function(d, i) { return "translate(0," + i * 20 + ")"; });
+
+    legend1.append("rect")
+    .attr("x", width-28)
+    .attr("width", 18)
+    .attr("height", 18)
+    .style("fill", function(d,i){ return colorScheme[2-i]; }); //minu
+
+    legend1.append("text")
+    .attr("x", width - 30)
+    .attr("y", 5)
+    .attr("dy", ".25em")
+    .style("text-anchor", "end")
+    .text(function(d,i) { return colorText[i]; });
+
+
+  })
+
+  function drawCircle(d)
+  {
+    console.log(d);
+    svg.append("circle")
+    .attr("class", "bgCircle")
+    .attr("id",function(d,i){return "circleSmiled"+i;})
+    .attr("r",60)
+    .attr("cx", d.Xcentre)
+    .attr("cy", d.Ycentre)
+    .style("fill", function(d1){ return "white"; })
+    .on("click",function(d){ svg.selectAll("#donut").remove();
+     svg.selectAll(".bgCircle").remove();
+   });
+
+
+
+  }
+
+  function drawOutlayCircles(circleData)
+  {
+    circleData.enter().append("circle")
+    .attr("class", "donutCircle")
+    .attr("id",function(d,i){return "circleSmiled"+i;})
+    .attr("r",60)
+    .attr("cx", function(d){ x = d.Xcentre; return d.Xcentre; })
+    .attr("cy", function(d){ y = d.Ycentre; return d.Ycentre;})
+    .style("fill", function(d){ return "black"; })
+    .style("opacity", 0.2)
+    .on("mouseout",function(d,i){
+      //  svg.selectAll("#donut").remove();
+    })
+    .on("click",function(d,i){ drawDonut(d);});
+
+
+
+  }
+
+  function drawDonut(d)
+  {
+    svg.selectAll("#donut").remove();
+    svg.selectAll(".bgCircle").remove();
+
+
+     drawCircle(d);
+    var arrayHeaders = [];
+    arrayHeaders = Object.keys(d);
+    var smileHeader = arrayHeaders[2];
+
+    var dataJson = [
+      {
+        "Category"  : "Not Smiled Phone",
+        "Count" : d.NotSmiledPhone,
+        "Age_Group" : d.AgeGroup,
+        "Time_of_Day" : d.TimeofDay
+      },
+      {
+        "Category" : "Not Smiled",
+        "Count" : d.NotSmiled,
+        "Age_Group" : d.AgeGroup,
+        "Time_of_Day" : d.TimeofDay
+      },
+      {
+        "Category" : "Smiled",
+        "Count" : d.Smiled,
+        "Age_Group" : d.AgeGroup,
+        "Time_of_Day" : d.TimeofDay
+      }
+
+    ];
+
+    //var color = d3.scaleOrdinal()
+    //.range(["#98abc5", "#8a89a6", "#7b6888", "#6b486b", "#a05d56", "#d0743c", "#ff8c00"]);
+
+    //var color = d3.scaleOrdinal(d3.schemeCategory10);
+
+    var arc = d3.arc()
+    .outerRadius(70)
+    .innerRadius(50);
+
+    var pie = d3.pie()
+    .sort(null)
+    .value(function(d) { return d.Count; });
+
+
+     var g = svg.selectAll(".arc")
+     .data(pie(dataJson))
+     .enter().append("g")
+     .attr("class", "arc")
+     .attr("id","donut")
+     .attr("transform","translate("+d.Xcentre+","+d.Ycentre+")")
+
+
+    g.append("path")
+    .attr("d", arc)
+    .style("fill", "red")
+    .transition()
+    .duration(1000)
+    .attrTween('d', function(d) {
+       var i = d3.interpolate(d.startAngle+0.1, d.endAngle)
+       return function(t) {
+       d.endAngle = i(t);
+        return arc(d);
+       }
+    })
+    .style("fill", function(d,i) { return colorScheme[2-i]; });
+
+    g.append("text")
+    .attr("text-anchor","middle")
+    .attr("transform", function(d) { return "translate(" + arc.centroid(d) + ")"; })
+    .attr("dy", ".35em")
+    .text(function(d) { return d.data.Count; });
+
+    g.append("svg:title")
+    .text(d => { return "Count of people who " + d.data.Category + " is : " + d.data.Count});
+
+
+  }
+
+  function type(d) {
+    d.Count = +d.Count;
+    return d;
+  }
+
+
+
+  function drawSmiledData(circleData)
+  {
+    var x,y;
+
+    circleData.enter().append("circle")
+    .attr("class", "circle")
+    .attr("id",function(d,i){return "circleSmiled"+i;})
+    .attr("r",function(d){ return d.Smiled*2; })
+    //.attr("r", function (d) { return d.average_submitted_chrg_amt*0.008; })
+    .attr("cx", function(d){ x = d.Xcentre; return d.Xcentre; })
+    .attr("cy", function(d){ y = d.Ycentre; return d.Ycentre;})
+    //.attr("transform","translate(50,"+ height +") scale(1,-1)")
+    //.attr("transform","scale(1,-1)")
+    //.attr("transform","translate(165,"+ height +") scale(1,-1)")
+    .style("fill", function(d){ return colorScheme[0]; })
+        .on("mouseover",function(d,i)
+    {
+
+      d3.select(this).style("opacity",0.5);
+   })
+    .on("mouseout",function(d,i)
+    {
+      //d3.select(this).style("fill",colorScheme(0));
+      d3.select(this).style("opacity",1);
+      //d3.select(this).style("stroke",colorScheme(0));
+      //d3.select(this).attr("r",function(d){ return d.Smiled; });
+    })
+    .append("svg:title")
+    .text(function(d){ return d.Smiled + " People in the Age Group of " + d.AgeGroup + " smiled during " + d.TimeofDay; });
+
+  }
+
+function circleAnimate()
+{
+  //console.log(d);
+  d3.select(".circle").transition().duration(2000)
+        .attr("cx", 200) // change this to random 2px
+        .attr("cy", 500) // change this to random 2px
+        .each("end", function () {
+        circleAnimate();
+    });
+}
+
+  function handleMouseOver(d,i)
+  {
+    //console.log(d.Smiled);
+    //console.log(this);
+    d3.select(this).attr({
+
+      fill: "black",
+      r : d.Smiled * 2
+    });
+  }
+  var currentColor;
+  function drawNotSmiledData(circleData)
+  {
+    //var colorScheme = d3.scaleOrdinal(d3.schemeCategory10);
+    circleData.enter().append("circle")
+    .attr("class", "circle")
+    .attr("id",function(d,i){return "circleNS"+i;})
+    .attr("r",function(d){ return d.NotSmiled*2; })
+    //.attr("r", function (d) { return d.average_submitted_chrg_amt*0.008; })
+    .attr("cx", function(d){ return d.Xcentre-30; })
+    .attr("cy", function(d){ return d.Ycentre;})
+    .style("fill", function(d){ return colorScheme[1]; })
+    .on("mouseover",function(d,i)
+    {
+      /*d3.select(this).style("fill",colorScheme(5));
+      d3.select(this).style("stroke","black");*/
+      d3.select(this).style("opacity",0.5);
+      //d3.select(this).attr("r", d3.select(this).attr("r")*10);
+    })
+    .on("mouseout",function(d,i)
+    {
+      d3.select(this).style("opacity",1);
+      /*d3.select(this).style("fill",colorScheme(1));
+      d3.select(this).style("stroke",colorScheme(1));
+      d3.select(this).attr("r",function(d){ return d.NotSmiled; });*/
+    })
+    .append("svg:title")
+    .text(function(d){ return d.NotSmiled + " People in the Age Group of " + d.AgeGroup + " did not smile during " + d.TimeofDay; });
+  }
+
+  function drawNotSmiledPhoneData(circleData)
+  {
+    //var colorScheme = d3.scaleOrdinal(d3.schemeCategory10);
+    var circlePlot = circleData.enter();
+    circlePlot.append("circle")
+    .attr("id",function(d,i){return "circleNSP"+i;})
+    .attr("class", "circle")
+    .attr("r",function(d){ return d.NotSmiledPhone*2; })
+    //.attr("r", function (d) { return d.average_submitted_chrg_amt*0.008; })
+    .attr("cx", function(d){ return d.Xcentre; })
+    .attr("cy", function(d){ return d.Ycentre-30;})
+    .style("fill", function(d){ return colorScheme[2]; })
+    .on("mouseover",function(d,i)
+    {
+      d3.select(this).style("opacity",0.5);
+    })
+    .on("mouseout",function(d,i)
+    {
+      d3.select(this).style("opacity",1);
+      /*d3.select(this).style("fill",colorScheme(2));
+      d3.select(this).style("stroke",colorScheme(2));
+      d3.select(this).attr("r",function(d){ return d.NotSmiledPhone; });*/
+    })
+    .append("svg:title")
+    .text(function(d){ return d.NotSmiledPhone + " People in the Age Group of " + d.AgeGroup + " did not smile during " + d.TimeofDay + " as they were busy with Mobile Phones! "; });
+
+  }
+
+  var duration=1500, delay = 3000;
+
+ function drawAgeBasedComparisonData()
+ {
+
+   functionCalled = "Age";
+   d3.csv("project_data.csv", function(error, csv_data) {
+
+   var dataJson = d3.nest()
+   .key(function(d) { return d.AgeGroup;})
+   .rollup(function(d) {
+   return d3.sum(d, function(g) { if(g.Reason == "Mobile"){return g.Count;} });
+   }).entries(csv_data);
+
+   //console.log(dataJson);
+   comparisonChart(dataJson);
+
+     setTimeout(drawGenderBasedComparisonData, duration + delay);
+
+
+
+   });
+
+ }
+
+
+ function drawGenderBasedComparisonData()
+ {
+   functionCalled = "Gender";
+   d3.csv("project_data.csv", function(error, csv_data) {
+
+   var dataJson = d3.nest()
+   .key(function(d) { return d.Gender;})
+   .rollup(function(d) {
+   return d3.sum(d, function(g) { if(g.Reason == "Mobile"){return g.Count;} });
+   }).entries(csv_data);
+
+   //console.log(dataJson);
+   comparisonChart(dataJson);
+setTimeout(drawTimeBasedComparisonData, duration + delay);
+
+   });
+
+ }
+
+ function drawTimeBasedComparisonData()
+ {
+
+   functionCalled = "Time";
+   d3.csv("project_data.csv", function(error, csv_data) {
+
+   var dataJson = d3.nest()
+   .key(function(d) { return d.TimeofDay;})
+   .rollup(function(d) {
+   return d3.sum(d, function(g) { if(g.Reason == "Mobile"){return g.Count;} });
+   }).entries(csv_data);
+
+   //console.log(dataJson);
+   //d3.selectAll("svg2 > *").remove();
+   comparisonChart(dataJson);
+setTimeout(drawAgeBasedComparisonData, duration + delay);
+
+   });
+
+ }
+
+
+ function comparisonChart(dataJson)
+ {
+   svg2.selectAll("#comparisonDonut").remove();
+   svg2.selectAll("#initialLegend").remove();
+
+   svg2.append("svg:title")
+   .text("Visualization 2: This displays the count of people who were busy with Mobile Phones");
+
+   svg2.append("text")
+        .attr("x", (svg2Width / 2) - 20)
+        .attr("y", 0 - (margin2.top / 2)-15)
+        .attr("text-anchor", "middle")
+        .style("font-size", "16px")
+        //.style("text-decoration", "underline")
+        .text("Visualization 2: This displays the count of people who were busy with Mobile Phones");
+
+   var borderPath = svg2.append("rect")
+             .attr("x",-50)
+             .attr("y", -30)
+             .attr("height", svg2Height+30)
+             .attr("width", svg2Width+30)
+             .style("stroke", "black")
+             .style("fill", "none")
+             .style("stroke-width", 1);
+   var Category1 = dataJson[0].key;
+   var Count1 = dataJson[0].value;
+   var Category2 = dataJson[1].key;
+   var Count2 = dataJson[1].value;
+   if(functionCalled != "Gender"){
+
+     var Category3 = dataJson[2].key;
+     var Count3 = dataJson[2].value;
+   }
+
+   var categoryArr = [];
+   var color = [];
+
+   if(functionCalled != "Gender")
+   {
+     categoryArr = [Category1,Category2,Category3];
+     color = ['#ffeda0','#feb24c','#f03b20'];
+     var dataJson = [
+       {
+         "Category" : "+ Category1 +",
+         "Count" : Count1
+       },
+       {
+         "Category" : "+ Category2 +",
+          "Count" : Count2
+       },
+       {
+         "Category"  : "+ Category3 +",
+         "Count" : Count3
+       }
+     ];
+   }
+   else {
+     categoryArr = [Category1,Category2,Category3];
+     color = ['#ffeda0','#feb24c'];
+     var dataJson = [
+       {
+         "Category" : "+ Category1 +",
+         "Count" : Count1
+       },
+       {
+         "Category" : "+ Category2 +",
+          "Count" : Count2
+       }
+     ];
+   }
+
+
+
+   var width = 960,
+       height = 500,
+       radius = Math.min(width, height) / 2,
+        cwidth = 25;
+
+
+
+   var arc = d3.arc()
+       .outerRadius(70)
+       .innerRadius(50);
+
+
+//console.log(categoryArr);
+   var pie = d3.pie()
+       .sort(null)
+       .value(function(d) { return d.Count; });
+
+
+
+     var g = svg2.selectAll(".arc")
+         .data(pie(dataJson))
+       .enter().append("g")
+         .attr("class", "arc")
+         .attr("id","comparisonDonut")
+         .attr("transform","translate("+ svg2Width/2 +","+ svg2Height/2 +")");
+
+     g.append("path")
+         .attr("d", arc)
+         .transition()
+         .duration(1000)
+         .attrTween('d', function(d) {
+            var i = d3.interpolate(d.startAngle+0.1, d.endAngle)
+            return function(t) {
+            d.endAngle = i(t);
+             return arc(d);
+            }
+         })
+         .style("fill", function(d,i) { return color[i]; });
+
+     g.append("text")
+     .attr("text-anchor","middle")
+         .attr("transform", function(d) { return "translate(" + arc.centroid(d) + ")"; })
+         .attr("dy", ".35em")
+         .text(function(d) { return d.data.Count; });
+
+
+
+         var legend2 = svg2.selectAll(".legend2")
+         .data(color)
+         .enter().append("g")
+         .attr("id","initialLegend")
+         .attr("class", "legend")
+         .attr("transform", function(d, i) { return "translate(0," + i * 20 + ")"; });
+
+         legend2.append("rect")
+         .attr("x", svg2Width-50)
+         .attr("width", 18)
+         .attr("height", 18)
+         .style("fill", function(d,i){ return color[i]; });
+
+         legend2.append("text")
+         .attr("x", svg2Width - 50)
+         .attr("y", 10)
+         .attr("dy", ".25em")
+         .style("text-anchor", "end")
+         .text(function(d,i) {  return categoryArr[i];  });
+
+
+
+
+ }
+
+
+ setTimeout(function() {
+     svg2.selectAll("*").remove();
+     //svg2.selectAll("g").data(symbols).enter().append("g").attr("class", "symbol");
+
+   }, duration);
+
+
+  </script>
+
+
+
+</body>
+</html>
